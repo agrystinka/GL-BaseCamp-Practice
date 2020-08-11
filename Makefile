@@ -1,10 +1,11 @@
 # The main (project top) file without .c
+#TARGET = testblink
 TARGET = blinky
 # All source files go here:
-
-SRCS = $(TARGET).c \
-	   try.c
-
+SRCS = $(TARGET).c
+# other sources added like that
+#SRCS += pin.c
+SRCS += mygpiolib.c
 # User defines
 DEFINES = GLSK_BOARD=1
 # The libs which are linked to the resulting target
@@ -144,7 +145,7 @@ $(OBJDIR)/%.o: $(SRC_DIR)/%.c | $(OBJDIR) $(BUILD_DIR)/$(PROFILE)/libopencm3.a
 $(BUILD_DIR)/$(PROFILE)/$(TARGET).elf: $(addprefix $(OBJDIR)/,$(OBJECTS)) | \
 $(BUILD_DIR)/$(PROFILE)/libopencm3.a \
 $(LDSCRIPT)
-	$(CC) -T$(LDSCRIPT) $< $(LDFLAGS) -o $@
+	$(CC) -T$(LDSCRIPT) $^ $(LDFLAGS) -o $@
 	@echo
 	$(SZ) $@
 	@echo
