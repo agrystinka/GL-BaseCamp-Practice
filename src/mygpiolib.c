@@ -3,10 +3,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-//Internal functions of mygpiolib
-uint32_t mgl_get_gpio_port(uint8_t port);
-uint32_t mgl_get_gpio_pin(uint8_t pin);
-
 //Definition of peripheral devices' pins
 
 // some STM32F4DISCOVERY peripheral devices' pins
@@ -21,6 +17,17 @@ const mgl_pin mgl_btn_swt2   = { .port=MGL_PORT_A, .pin=15, .inverse=1};
 const mgl_pin mgl_btn_swt3   = { .port=MGL_PORT_C, .pin=9,  .inverse=1};
 const mgl_pin mgl_btn_swt4   = { .port=MGL_PORT_C, .pin=6,  .inverse=1};
 const mgl_pin mgl_btn_swt5   = { .port=MGL_PORT_C, .pin=8,  .inverse=1};
+
+//Internal functions of mygpiolib-------------------------------------------
+uint32_t mgl_get_gpio_pin(uint8_t pin)
+{
+    return 1 << pin;
+}
+
+uint32_t mgl_get_gpio_port(enum ports port)
+{
+    return GPIOA + (GPIOB - GPIOA) * port;
+}
 
 /**
  * An abstraction over basic GPIO functions.
@@ -122,8 +129,6 @@ void mgl_port_write(mgl_pin periph, uint16_t data)
 void mgl_mode_setup_default(mgl_pin periph)
 {
     uint8_t mode, pull_up_down;
-    uint32_t port = mgl_get_gpio_port(periph.port);
-    uint32_t pin = mgl_get_gpio_pin(periph.pin);
 
     //if periph is a LED
     if((periph.port == mgl_led_orange.port && periph.pin == mgl_led_orange.pin) ||
@@ -134,16 +139,21 @@ void mgl_mode_setup_default(mgl_pin periph)
         pull_up_down = GPIO_PUPD_NONE;
     }
 
-    //if periph is a button
+    //if periph is a button on GLSK
     else
-    if((periph.port == mgl_btn_usr.port && periph.pin == mgl_btn_usr.pin) ||
-       (periph.port == mgl_btn_swt1.port && periph.pin == mgl_btn_swt1.pin) ||
+    if((periph.port == mgl_btn_swt1.port && periph.pin == mgl_btn_swt1.pin) ||
        (periph.port == mgl_btn_swt2.port && periph.pin == mgl_btn_swt2.pin) ||
        (periph.port == mgl_btn_swt3.port && periph.pin == mgl_btn_swt3.pin) ||
        (periph.port == mgl_btn_swt4.port && periph.pin == mgl_btn_swt4.pin) ||
        (periph.port == mgl_btn_swt5.port && periph.pin == mgl_btn_swt5.pin)) {
         mode = GPIO_MODE_INPUT;
         pull_up_down = GPIO_PUPD_PULLUP;
+    }
+
+    //if periph is STM_USR button
+    else if(periph.port == mgl_btn_usr.port && periph.pin == mgl_btn_usr.pin){
+        mode = GPIO_MODE_INPUT;
+        pull_up_down = GPIO_PUPD_NONE;
     }
     else{
         mode = GPIO_MODE_OUTPUT;
@@ -182,62 +192,38 @@ void mgl_mode_setup(mgl_pin periph, uint8_t mode, uint8_t pull_up_down)
                         pull_up_down, mgl_get_gpio_pin(periph.pin));
 }
 
-//Work with buttons functions-----------------------------------------------------
-// bool mgl_is_btn_pressed(mgl_pin btn)
-// {
-//     uint32_t btn_port = mgl_get_gpio_port(btn.port);
-//     uint32_t btn_pin = mgl_get_gpio_pin(btn.pin);
-//
-//     //debouncing
-//     int cnt = 0;
-//     for(int i = 0; i < 10; i++)
-//         if((gpio_port_read(btn_port) & btn_pin) == !btn.inverse)
-//             cnt++;
-//
-//     if(cnt >= 5){
-//         while((gpio_port_read(btn_port) & btn_pin) == !btn.inverse);
-//         return true;
-//     }
-//     else
-//         return false;
-// }
+/**
+ * Functions for work with buttons.
+ */
 
-//Internal functions of mygpiolib-------------------------------------------
-uint32_t mgl_get_gpio_pin(uint8_t pin)
+ /**
+  * bool mgl_is_btn_pressed() - check if button is pressed.
+  * @mgl_pin btn: button.
+  *
+  * Check if button is pressed.
+  * Function contains simple button debouncing.
+  * It is based on few times polling the port is there the ACTIVE signal.
+  *
+  * Return: bool.
+  *         true - if button is pressed, fause- if button is not pressed.
+  */
+bool mgl_is_btn_pressed(mgl_pin btn)
 {
-    // if (pin == 0)     return  GPIO0;
-    // if (pin == 1)     return  GPIO1;
-    // if (pin == 2)     return  GPIO2;
-    // if (pin == 3)     return  GPIO3;
-    // if (pin == 4)     return  GPIO4;
-    // if (pin == 5)     return  GPIO5;
-    // if (pin == 6)     return  GPIO6;
-    // if (pin == 7)     return  GPIO7;
-    // if (pin == 8)     return  GPIO8;
-    // if (pin == 9)     return  GPIO9;
-    // if (pin == 10)    return  GPIO10;
-    // if (pin == 11)    return  GPIO11;
-    // if (pin == 12)    return  GPIO12;
-    // if (pin == 13)    return  GPIO13;
-    // if (pin == 14)    return  GPIO14;
-    // if (pin == 15)    return  GPIO15;
-    return 1 << pin;
-    //return GPIO0 << pin;
-}
+    uint32_t btn_port = mgl_get_gpio_port(btn.port);
+    uint32_t btn_pin = mgl_get_gpio_pin(btn.pin);
 
-uint32_t mgl_get_gpio_port(enum ports port)
-{
-    // if (port == MGL_PORT_A)    return  GPIOA;
-    // if (port == MGL_PORT_B)    return  GPIOB;
-    // if (port == MGL_PORT_C)    return  GPIOC;
-    // if (port == MGL_PORT_D)    return  GPIOD;
-    // if (port == MGL_PORT_E)    return  GPIOE;
-    // if (port == MGL_PORT_F)    return  GPIOF;
-    // if (port == MGL_PORT_G)    return  GPIOG;
-    // if (port == MGL_PORT_H)    return  GPIOH;
-    // if (port == MGL_PORT_I)    return  GPIOI;
-    // if (port == MGL_PORT_J)    return  GPIOJ;
-    // if (port == MGL_PORT_K)    return  GPIOK;
+    //debouncing
+    int cnt = 0;
+    for(int i = 0; i < 10; i++)
+        if(((gpio_port_read(btn_port) & btn_pin) == 0 && btn.inverse == 1) ||
+           ((gpio_port_read(btn_port) & btn_pin) != 0 && btn.inverse == 0))
+            cnt++;
 
-    return GPIOA + (GPIOB - GPIOA) * port;
+    if(cnt >= 5){
+        while(((gpio_port_read(btn_port) & btn_pin) == 0 && btn.inverse == 1) ||
+           ((gpio_port_read(btn_port) & btn_pin) != 0 && btn.inverse == 0));
+        return true;
+    }
+    else
+        return false;
 }

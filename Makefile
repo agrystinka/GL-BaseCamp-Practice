@@ -1,10 +1,8 @@
 # The main (project top) file without .c
-#TARGET = testblink
 TARGET = blinky
 # All source files go here:
 SRCS = $(TARGET).c
 # other sources added like that
-#SRCS += pin.c
 SRCS += mygpiolib.c
 # User defines
 DEFINES = GLSK_BOARD=1

@@ -16,35 +16,17 @@
  *        K = 1011, 1100 - 1111 are invalid codes
  * @pin: pin of port from 0 to 15
  *       Size: 4 bits
- * @inverse:
- *           Size: 1 bit
- *           if 0 - ACTIVE HIGHT
- *           if 1 - ACTIVE LOW
- * @mode:
- *      Size: 2 bits
- *      if 00 - input
- *      if 01 - output
- *      if 10 - alternative function
- *      if 11 - analog
- * @pullupdown:
- *      Size: 2 bits
- *      if 00 - none
- *      if 01 - pullup
- *      if 10 - pulldown
- *      if 11 - invalid code
  * @reserved: reserved for future use
- *      Size: 3 bits
+ *      Size: 7 bits
  *
  *
  * pin_s is a packed structure.
  */
- struct  __attribute__((__packed__)) mgl_pin {
+ struct  __attribute__((packed, aligned(1))) mgl_pin {
      uint16_t port : 4;
      uint16_t pin : 4;
      uint16_t inverse : 1;
-     uint16_t mode : 2;
-     uint16_t pullupdown : 2;
-     uint16_t reserved : 3;
+     uint16_t reserved : 7;
  };
 
 typedef struct mgl_pin  mgl_pin;
@@ -63,12 +45,13 @@ typedef struct mgl_pin  mgl_pin;
  	MGL_PORT_K = 10
  };
 
+// some STM32F4DISCOVERY peripheral devices' pins
  extern const mgl_pin mgl_led_orange;
  extern const mgl_pin mgl_led_red;
  extern const mgl_pin mgl_led_green;
  extern const mgl_pin mgl_led_blue;
  extern const mgl_pin mgl_btn_usr;
- // some GL-SK pinsinverse
+// some GLSK peripheral devices' pins
  extern const mgl_pin mgl_btn_swt1;
  extern const mgl_pin mgl_btn_swt2;
  extern const mgl_pin mgl_btn_swt3;
@@ -93,3 +76,8 @@ typedef struct mgl_pin  mgl_pin;
  void mgl_mode_setup_default(mgl_pin periph);
 
 void mgl_mode_setup(mgl_pin periph, uint8_t mode, uint8_t pull_up_down);
+
+/**
+ * Functions for work with buttons.
+ */
+bool mgl_is_btn_pressed(mgl_pin btn);
