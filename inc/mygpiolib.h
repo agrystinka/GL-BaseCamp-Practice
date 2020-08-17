@@ -2,13 +2,15 @@
  * my-gpio-lib - an abstraction over libopencm3/stm32/gpio
  * suted for Global Logic Started Kit
  */
+#ifndef MYGPIOLIB_H
+#define MYGPIOLIB_H
 #include <libopencm3/stm32/gpio.h>
 #include <stdint.h>
 #include <stdbool.h>
 
 #define MGL_DEFAULT 0xff
 /**
- * struct pin_s.
+ * struct mgl_pin.
  * @gpio: Port from A to K.
  *        Size: 4 bits
  *        A = 0000, B = 0001, C = 0010, D = 0011, E = 0100,
@@ -20,7 +22,7 @@
  *      Size: 7 bits
  *
  *
- * pin_s is a packed structure.
+ * mgl_pin is a packed structure.
  */
  struct  __attribute__((packed, aligned(1))) mgl_pin {
      uint16_t port : 4;
@@ -29,7 +31,33 @@
      uint16_t reserved : 7;
  };
 
+ /**
+  * struct mgl_pin_group.
+  * @port: Port from A to K.
+  *        Size: 4 bits
+  *        A = 0000, B = 0001, C = 0010, D = 0011, E = 0100,
+  *        F = 0101, G = 0111, H = 1000, I = 1001, J = 1010,
+  *        K = 1011, 1100 - 1111 are invalid codes
+  * @reserved: reserved for future use
+  *            Size: 12 bits
+  * @pins: each bit represents corresponding pin in a port
+  *        Size: 16 bits
+  * @inversions: each bit==1 represents inversion
+  *              Size: 16 bits
+  *
+  * Represents group of pins residing in the same GPIO port.
+  * Used as an optimization to allow reading/writing them all at once.
+  * mgl_pin_group is a packed structure.
+  */
+struct __attribute__((packed, aligned(1))) mgl_pin_group {
+	uint16_t port       : 4;
+	uint16_t reserved : 12;
+	uint16_t pins;
+	uint16_t inversions;
+};
+
 typedef struct mgl_pin  mgl_pin;
+typedef struct mgl_pin_group  mgl_pin_group;
 
  enum ports {
  	MGL_PORT_A = 0,
@@ -57,6 +85,12 @@ typedef struct mgl_pin  mgl_pin;
  extern const mgl_pin mgl_btn_swt3;
  extern const mgl_pin mgl_btn_swt4 ;
  extern const mgl_pin mgl_btn_swt5;
+ // GL-SK LCD 4-bit data interface pin group
+ extern const mgl_pin sk_io_lcd_bkl;
+ extern const mgl_pin sk_io_lcd_rs;
+ extern const mgl_pin sk_io_lcd_rw;
+ extern const mgl_pin sk_io_lcd_en;
+ extern const mgl_pin_group sk_io_lcd_data;
 
  /**
   * An abstraction over basic GPIO functions.
@@ -81,3 +115,9 @@ void mgl_mode_setup(mgl_pin periph, uint8_t mode, uint8_t pull_up_down);
  * Functions for work with buttons.
  */
 bool mgl_is_btn_pressed(mgl_pin btn);
+
+/**
+ * Functions for work with groups.
+ */
+void mgl_pin_group_set(mgl_pin_group group, uint16_t values);
+#endif

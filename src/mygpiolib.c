@@ -17,6 +17,16 @@ const mgl_pin mgl_btn_swt2   = { .port=MGL_PORT_A, .pin=15, .inverse=1};
 const mgl_pin mgl_btn_swt3   = { .port=MGL_PORT_C, .pin=9,  .inverse=1};
 const mgl_pin mgl_btn_swt4   = { .port=MGL_PORT_C, .pin=6,  .inverse=1};
 const mgl_pin mgl_btn_swt5   = { .port=MGL_PORT_C, .pin=8,  .inverse=1};
+// GL-SK LCD 4-bit data interface pin group
+const mgl_pin sk_io_lcd_bkl    = { .port=MGL_PORT_E, .pin=9,  .inverse=0};
+const mgl_pin sk_io_lcd_rs     = { .port=MGL_PORT_E, .pin=7,  .inverse=0};
+const mgl_pin sk_io_lcd_rw     = { .port=MGL_PORT_E, .pin=10, .inverse=0};
+const mgl_pin sk_io_lcd_en     = { .port=MGL_PORT_E, .pin=11, .inverse=0};
+const mgl_pin_group sk_io_lcd_data = {
+	.port = MGL_PORT_E,
+	.pins = (1 << 15) | (1 << 14) | (1 << 13) | (1 << 12),
+	.inversions = 0
+};
 
 //Internal functions of mygpiolib-------------------------------------------
 uint32_t mgl_get_gpio_pin(uint8_t pin)
@@ -192,6 +202,50 @@ void mgl_mode_setup(mgl_pin periph, uint8_t mode, uint8_t pull_up_down)
                         pull_up_down, mgl_get_gpio_pin(periph.pin));
 }
 
+// void glsk_pins_init(const bool set_all)
+// {
+//
+// 	// Initialize all pins to analog, low-speed, af0, push-pull, no-pullup
+// 	// Analog mode will allow for lower power consumption
+// 	for (int i = SK_PORTA; set_all && (i <= SK_PORTH); i++) {
+// 		uint32_t port = mgl_get_gpio_port(i);
+// 		gpio_mode_setup(port, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, 0xffff);
+// 		gpio_set_output_options(port, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, 0xffff);
+// 		gpio_set_af(port, 0, 0xffff);
+// 	}
+//
+// 	sk_pin out_pins[] = {
+// 		mgl_led_orange,
+// 		mgl_led_red,
+// 		mgl_led_green,
+// 		mgl_led_blue,
+// 	};
+//
+// 	// set all outputs to out, push-pull, no pullup
+// 	sk_arr_foreach(pin, out_pins) {
+// 		uint32_t port = mgl_get_gpio_port(pin.port);
+// 		gpio_mode_setup(port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, (1 << pin.pin));
+// 	}
+//
+// 	gpio_mode_setup(mgl_get_gpio_port(sk_io_lcd_data.port), GPIO_MODE_OUTPUT,
+// 				    GPIO_PUPD_NONE, sk_io_lcd_data.pins);
+//
+// 	sk_pin in_pins[] = {
+// 		mgl_btn_usr,
+// 		mgl_btn_swt1,
+// 		mgl_btn_swt2,
+//         mgl_btn_swt3,
+//         mgl_btn_swt4,
+//         mgl_btn_swt5
+// 	};
+//
+// 	// set all inputs to in, no pullup
+// 	sk_arr_foreach(pin, in_pins) {
+// 		uint32_t port = sk_pin_port_to_gpio(pin.port);
+// 		gpio_mode_setup(port, GPIO_MODE_INPUT, GPIO_PUPD_NONE, (1 << pin.pin));
+// 	}
+// }
+
 /**
  * Functions for work with buttons.
  */
@@ -226,4 +280,59 @@ bool mgl_is_btn_pressed(mgl_pin btn)
     }
     else
         return false;
+}
+
+/*Work with group of pins*/
+/**
+ * Densification helper (private)
+ * Example:
+ *     mask = 0b1010000011110010
+ *   sparse = 0b1010101010101010
+ *   result = 0b1 1     1010  1
+ */
+static uint16_t group_densify(uint16_t mask, uint16_t sparse)
+{
+	uint16_t ret = 0;
+	int idx = 0;
+	for (int i = 0; i < 16; i++) {
+		if (mask & (1 << i)) {
+			ret |= sparse & (1 << i) ? (1 << idx) : 0;
+			idx++;
+		}
+	}
+	return ret;
+}
+
+/**
+ * Sparsification helper (private)
+ * Example:
+ *     mask = 0b1010000011110010
+ *    dense = 0b1 1     1010  1
+ *   result = 0b1010000010100010
+ */
+static uint16_t group_sparsify(uint16_t mask, uint16_t dense)
+{
+	uint16_t ret = 0;
+	int idx = 0;
+	for (int i = 0; i < 16; i++) {
+		if (mask & (1 << i)) {
+			ret |= dense & (1 << idx) ? (1 << i) : 0;
+			idx++;
+		}
+	}
+	return ret;
+}
+
+void mgl_pin_group_set(mgl_pin_group group, uint16_t values)
+{
+	// We want to change only pins we use in group, and don't touch the others
+	// We also want to manipulate the output register, not what's on port input at the moment,
+    // so gpio_port_read() does not suit. Use GPIO ODR register directly
+	values = group_sparsify(group.pins, values);
+	values ^= group.inversions;
+	volatile uint32_t *odr = &GPIO_ODR(mgl_get_gpio_port(group.port));
+	uint32_t pval = *odr;
+	pval &= ~((uint32_t)(group.pins));	// reset all pins in account
+	pval |= values;			// set all pins in account to our values
+	*odr = pval;
 }
