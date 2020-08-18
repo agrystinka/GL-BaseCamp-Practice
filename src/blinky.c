@@ -1,13 +1,7 @@
-/*
- * This file containse few alternative samples of work with
- * LEDs, buttons, timers(TIM7, TIM2), systick and interrupts.
- * It is just studing samples, which are not united in one task/project.
- *
- * All samples use mygpiolib - an abstraction over libopencm3/stm32/gpio
-*/
 #include "mygpiolib.h"
 #include "timers.h"
 #include "display.h"
+#include "lcd_print.h"
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/scb.h>
@@ -19,84 +13,113 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-static void test_bkl_func(uint8_t val)
+static void init_bkl_pwm(void)		// dirty code, needs refactoring
 {
-	mgl_set_value(sk_io_lcd_bkl, (bool)val);
+	nvic_set_priority(NVIC_EXTI0_IRQ, 2 << 2 | 3);
+	rcc_periph_clock_enable(RCC_GPIOA);
+	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO0);		// pulldown is external
+	rcc_periph_clock_enable(RCC_SYSCFG);
+	exti_select_source(EXTI0, GPIOA);
+	exti_set_trigger(EXTI0, EXTI_TRIGGER_RISING);
+	exti_enable_request(EXTI0);
+	exti_reset_request(EXTI0);
+	nvic_enable_irq(NVIC_EXTI0_IRQ);
+
+	gpio_set_output_options(GPIOE, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, 1 << 9);
+	gpio_set_af(GPIOE, GPIO_AF1, 1 << 9);
+	gpio_mode_setup(GPIOE, GPIO_MODE_AF, GPIO_PUPD_NONE, 1 << 9);
+
+	rcc_periph_clock_enable(RCC_TIM1);
+
+	timer_set_mode(TIM1, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+	timer_set_prescaler(TIM1, 16000000 / (256*1000));
+	timer_enable_preload(TIM1);
+	timer_set_period(TIM1, 255);
+	//timer_continuous_mode(TIM1);
+	timer_set_oc_mode(TIM1, TIM_OC1, TIM_OCM_PWM1);
+	timer_enable_oc_output(TIM1, TIM_OC1);
+	timer_enable_break_main_output(TIM1);
+	timer_set_oc_value(TIM1, TIM_OC1, 0);
+	timer_enable_counter(TIM1);
 }
+
+static void timer1_set_pwm_backlight(uint8_t val)
+{
+	timer_set_oc_value(TIM1, TIM_OC1, val);	// we have TIM1_CH1 connected to backlight
+}
+
+static void lcd_putstring(struct sk_lcd *lcd, const char *str)	// dummy example
+{
+	char *ptr = str;
+	while (*ptr != '\0') {
+		sk_lcd_putchar(lcd, *ptr);
+		ptr++;
+	}
+}
+
+static struct sk_lcd lcd = {
+	.pin_group_data = &sk_io_lcd_data,
+	.pin_rs = &sk_io_lcd_rs,
+	.pin_en = &sk_io_lcd_en,
+	.pin_rw = &sk_io_lcd_rw,
+	//.pin_bkl = &sk_io_lcd_bkl,
+	.set_backlight_func = &timer1_set_pwm_backlight,
+	.delay_func_us = NULL,
+	.delay_func_ms = &delay_ms_systick,
+	.is4bitinterface = true,
+	.charmap_func = &sk_lcd_charmap_rus_cp1251
+};
+
+void exti0_isr(void)		// dirty code, needs refactoring
+{
+	static uint8_t bkl = 0;
+	sk_lcd_set_backlight(&lcd, bkl-1u);
+	bkl += 16u;
+	exti_reset_request(EXTI0);
+}
+
 
 int main(void)
 {
-    //SAMPLE WITH DISPLAY
-    rcc_periph_clock_enable(RCC_GPIOD);     // leds are here
-	rcc_periph_clock_enable(RCC_GPIOE);		// lcd is here
-
-    mgl_mode_setup_default(mgl_led_orange);
-    lcd_setup_default();
-
-	mgl_pin_group_set(sk_io_lcd_data, 0x00);
+    rcc_periph_clock_enable(RCC_GPIOD);
+	rcc_periph_clock_enable(RCC_GPIOE);		// lcd is connected to port E
+	//glsk_pins_init(true);
+	lcd_setup_default();
+	mgl_mode_setup_default(mgl_led_orange);
 	mgl_set(mgl_led_orange);
-
+	mgl_pin_group_set(sk_io_lcd_data, 0x00);
+	//sk_pin_set(sk_io_led_orange, true);
 	systick_setup();
+	//sk_tick_init(16000000ul / 10000ul, 2);
 	cm_enable_interrupts();
 
-    struct sk_lcd lcd = {
-    .pin_group_data = &sk_io_lcd_data,
-    .pin_rs = &sk_io_lcd_rs,
-    .pin_en = &sk_io_lcd_en,
-    .pin_rw = &sk_io_lcd_rw,
-    .pin_bkl = &sk_io_lcd_bkl,
-    //.set_backlight_func = &test_bkl_func,
-    .delay_func_us = NULL,
-    .delay_func_ms = &delay_ms_systick,
-    .is4bitinterface = true
-    };
+	init_bkl_pwm();
 
-	sk_lcd_set_backlight(&lcd, 0xFF);
+	mgl_clear(mgl_led_orange);
+	//sk_pin_set(sk_io_led_green, true);
 
-    while (1) {
-		mgl_clear(mgl_led_orange);
-		lcd_init_4bit(&lcd);
-		mgl_set(mgl_led_orange);
-        delay_ms_systick(500);
+	sk_lcd_init(&lcd);
+	sk_lcd_cmd_onoffctl(&lcd, true, false, false);	// display on, cursor off, blinking off
+	sk_lcd_set_backlight(&lcd, 200);
+
+
+	//lcd_putstring(&lcd, "Здравствуй, мир!");
+	// TODO: implement printf-like interface with special chars (\r \n \t ...)
+	//sk_lcd_cmd_setaddr(&lcd, 0x40, false);	// 2nd line begins from addr 0x40
+	//lcd_putstring(&lcd, "Hello, world!");
+	//lcd_print(&lcd, "\tHello, 123", 8, 9, 12);
+	lcd_print_int(&lcd, 987);
+	mgl_set(mgl_led_orange);
+
+	bool isdirright = true;
+     while (1) {
+	// 	// dumb code for logic analyzer to test levels
+	// 	for (int i = 0; i < 16; i++) {
+	// 		sk_lcd_cmd_shift(&lcd, true, isdirright);
+	// 		if (!isdirright) delay_ms_systick(200);
+	// 	}
+	// 	if (!isdirright) delay_ms_systick(3000);
+	// 	isdirright = !isdirright;	// swap shift direction
+	// 	mgl_set_value(mgl_led_orange, isdirright);
     }
-
-    // rcc_periph_clock_enable(RCC_GPIOD);  //LEDs enable
-	// rcc_periph_clock_enable(RCC_TIM7);
-	// //Switch on red diod untill all settings end
-	// mgl_mode_setup_default(mgl_led_red);
-	// mgl_set(mgl_led_red);
-    //
-	// mgl_mode_setup_default(mgl_led_blue);
-	// mgl_mode_setup_default(mgl_led_green);
-	// mgl_mode_setup_default(mgl_led_orange);
-	// gpio_set_output_options(GPIOE, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO12 | GPIO13 | GPIO15);
-	// //switch on diods: blue, green, orange
-	// mgl_set(mgl_led_blue);
-	// mgl_set(mgl_led_green);
-	// mgl_set(mgl_led_orange);
-    //
-	// //sample 3
-	// //timer_tim7_setup(1000);
-    //
-	// //sample 2
-	// systick_setup();
-    //
-	// //sample 1
-	// one_shot_timer_tim7_setup();
-	// //timer_tim7_setup(1000);
-    //
-	// cm_enable_interrupts();
-    //
-	// //Switch aff red diod
-	// mgl_clear(mgl_led_red);
-    //
-    // while (1) {
-	// 	//sample 2
-	// 	mgl_toggle(mgl_led_green);
-	// 	delay_ms_systick(1000);
-    //
-	// 	//sample 1
-	// 	mgl_toggle(mgl_led_orange);
-	// 	delay_us_tim7(5000000);
-    // }
 }

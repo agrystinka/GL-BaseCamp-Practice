@@ -3,9 +3,7 @@ TARGET = blinky
 # All source files go here:
 SRCS = $(TARGET).c
 # other sources added like that
-SRCS += mygpiolib.c \
-        timers.c \
-		display.c 
+SRCS += mygpiolib.c timers.c display.c
 # User defines
 DEFINES = GLSK_BOARD=1
 # The libs which are linked to the resulting target
@@ -31,6 +29,9 @@ EXTRAFLAGS ?= $(OPTFLAGS) -std=gnu17 \
 			  -Wall -Wextra -Wpedantic \
 			  -Wimplicit-function-declaration -Wredundant-decls \
               -Wstrict-prototypes -Wundef -Wshadow
+
+# Required by LCD lib to map charsets (UTF8 to CP1251)
+EXTRAFLAGS += -finput-charset=UTF-8 -fexec-charset=cp1251
 # Device is required for libopencm3
 DEVICE ?= stm32f407vgt6
 # Possible values: soft, hard

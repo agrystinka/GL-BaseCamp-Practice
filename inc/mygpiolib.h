@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define MGL_DEFAULT 0xff
+//#define MGL_DEFAULT 0xff
 /**
  * struct mgl_pin.
  * @gpio: Port from A to K.
@@ -85,7 +85,7 @@ typedef struct mgl_pin_group  mgl_pin_group;
  extern const mgl_pin mgl_btn_swt3;
  extern const mgl_pin mgl_btn_swt4 ;
  extern const mgl_pin mgl_btn_swt5;
- // GL-SK LCD 4-bit data interface pin group
+ // GLSK LCD
  extern const mgl_pin sk_io_lcd_bkl;
  extern const mgl_pin sk_io_lcd_rs;
  extern const mgl_pin sk_io_lcd_rw;
@@ -109,7 +109,10 @@ typedef struct mgl_pin_group  mgl_pin_group;
 
  void mgl_mode_setup_default(mgl_pin periph);
 
-void mgl_mode_setup(mgl_pin periph, uint8_t mode, uint8_t pull_up_down);
+ void mgl_mode_setup(mgl_pin periph, uint8_t mode, uint8_t pull_up_down);
+
+ uint32_t mgl_get_gpio_pin(uint8_t pin);
+ uint32_t mgl_get_gpio_port(enum ports port);
 
 /**
  * Functions for work with buttons.

@@ -93,10 +93,15 @@ void mgl_toggle(mgl_pin periph)
  */
 void mgl_set_value(mgl_pin periph, bool value)
 {
-    if(value == true)
-        gpio_set(mgl_get_gpio_port(periph.port), mgl_get_gpio_pin(periph.pin));
-    else if(value == false)
-        gpio_clear(mgl_get_gpio_port(periph.port), mgl_get_gpio_pin(periph.pin));
+    // if(value == true)
+    //     gpio_set(mgl_get_gpio_port(periph.port), mgl_get_gpio_pin(periph.pin));
+    // else if(value == false)
+    //     gpio_clear(mgl_get_gpio_port(periph.port), mgl_get_gpio_pin(periph.pin));
+	//
+	if (value ^ periph.inverse)
+		gpio_set(mgl_get_gpio_port(periph.port), mgl_get_gpio_pin(periph.pin));
+	else
+		gpio_clear(mgl_get_gpio_port(periph.port), mgl_get_gpio_pin(periph.pin));
 }
 
 /**
@@ -114,7 +119,7 @@ uint16_t mgl_port_read(mgl_pin periph)
 }
 
 /**
- * mgl_port_read() - write to peripheral device.
+ * mgl_port_write() - write to peripheral device.
  * @mgl_pin periph: peripheral device.
  *
  * Be careful, because this function write to port on which device work,

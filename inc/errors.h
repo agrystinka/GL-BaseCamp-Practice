@@ -7,17 +7,20 @@
  */
  #ifndef ERRORS_H
  #define ERRORS_H
-enum sk_err {
-	/** No error, everything fine */
-	SK_EOK = 0,
-	/** Unknown error. Something went wrong but don't boter detecting what */
-	SK_EUNKNOWN = -1,
-	/** Some feature is not implemented yet */
-	SK_ENOTIMPLEMENTED = -2,
-	/** Wrong argument passed */
-	SK_EWRONGARG = -3
-};
-
+ enum sk_err {
+ 	/** No error, everything fine */
+ 	SK_EOK = 0,
+ 	/** Unknown error. Something went wrong but don't boter detecting what */
+ 	SK_EUNKNOWN = -1,
+ 	/** Some feature is not implemented yet */
+ 	SK_ENOTIMPLEMENTED = -2,
+ 	/** Something simply could not be done */
+ 	SK_EUNAVAILABLE = -3,
+ 	/** Wrong argument passed */
+ 	SK_EWRONGARG = -4,
+ 	/** Not enough arguments */
+ 	SK_ENENARG = -5,
+ };
 
 // alias type for more concise definitions
 typedef enum sk_err sk_err;
