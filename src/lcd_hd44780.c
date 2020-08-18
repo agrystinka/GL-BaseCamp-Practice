@@ -65,7 +65,7 @@ static void lcd_delay_us(struct sk_lcd *lcd, uint32_t us)
 		usfunc(us % 1000);
 }
 
-static void lcd_data_set_halfbyte(struct sk_lcd *lcd, uint8_t half)
+void lcd_data_set_halfbyte(struct sk_lcd *lcd, uint8_t half)
 {
 	mgl_set_value(*lcd->pin_en, true);
 	mgl_pin_group_set(*lcd->pin_group_data, half & 0x0F);
@@ -74,7 +74,7 @@ static void lcd_data_set_halfbyte(struct sk_lcd *lcd, uint8_t half)
 	lcd_delay_us(lcd, DELAY_ENA_STROBE_US);
 }
 
-static void lcd_data_set_byte(struct sk_lcd *lcd, uint8_t byte)
+void lcd_data_set_byte(struct sk_lcd *lcd, uint8_t byte)
 {
 	if (lcd->is4bitinterface) {
 		lcd_data_set_halfbyte(lcd, byte >> 4);
@@ -326,16 +326,16 @@ uint8_t sk_lcd_charmap_rus_cp1251(const char c)
 		case 'б': return 0xB2;
 		case 'в': return 0xB3;
 		case 'г': return 0xB4;
-		case 'ґ': return 0xB4;		// bad sym
+		case 'ґ': return 0x00;		// bad sym !!!
 		case 'д': return 0xE3;
 		case 'е': return 'e';
-		case 'є': return 'e';		// bad sym
+		case 'є': return 0x01;		// bad sym !!!
 		case 'ё': return 0xB5;
 		case 'ж': return 0xB6;
 		case 'з': return 0xB7;
 		case 'и': return 0xB8;
 		case 'і': return 'i';
-		case 'ї': return 'i';		// bad sym
+		case 'ї': return 0x02;		// bad sym !!!
 		case 'й': return 0xB9;
 		case 'к': return 0xBA;
 		case 'л': return 0xBB;
@@ -372,24 +372,19 @@ uint8_t sk_lcd_charmap_rus_cp1251(const char c)
 	}
 }
 
-void lcd_print_int(struct sk_lcd *lcd, int32_t num)
+//only for 'ґ'
+sk_err custom_cgram_load(struct sk_lcd *lcd)
 {
-	if (num < 0)
-		sk_lcd_putchar(lcd, 'm');
-	char str[16];
-	int i = 0;
-	while(num != 0){
-		str[i] = num % 10 + '0';
-		num /= 10;
-		i++;
-	}
-	str[i] = '\0';
+	if(sk_lcd_cmd_setaddr(lcd, 0x00, 1) != SK_EOK)  //cmd
+		return SK_EUNKNOWN;
+	lcd_data_set_byte(lcd, 0x00);  //1
+	lcd_data_set_byte(lcd, 0x01);  //2
+	lcd_data_set_byte(lcd, 0x1f);  //3
+	lcd_data_set_byte(lcd, 0x10);  //4
+	lcd_data_set_byte(lcd, 0x10);  //5
+	lcd_data_set_byte(lcd, 0x10);  //6
+	lcd_data_set_byte(lcd, 0x10);  //7
+	lcd_data_set_byte(lcd, 0x00);  //8
 
-	i--;
-	while(i >= 0){
-		sk_lcd_putchar(lcd, str[i]);
-		i--;
-	}
-
-	//lcd_putstring(&lcd, str);
+	return SK_EOK;
 }

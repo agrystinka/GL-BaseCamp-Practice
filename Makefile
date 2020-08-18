@@ -3,7 +3,7 @@ TARGET = blinky
 # All source files go here:
 SRCS = $(TARGET).c
 # other sources added like that
-SRCS += mygpiolib.c timers.c display.c
+SRCS += mygpiolib.c timers.c lcd_hd44780.c display_pwm.c display_print.c
 # User defines
 DEFINES = GLSK_BOARD=1
 # The libs which are linked to the resulting target

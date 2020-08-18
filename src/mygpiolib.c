@@ -207,50 +207,6 @@ void mgl_mode_setup(mgl_pin periph, uint8_t mode, uint8_t pull_up_down)
                         pull_up_down, mgl_get_gpio_pin(periph.pin));
 }
 
-// void glsk_pins_init(const bool set_all)
-// {
-//
-// 	// Initialize all pins to analog, low-speed, af0, push-pull, no-pullup
-// 	// Analog mode will allow for lower power consumption
-// 	for (int i = SK_PORTA; set_all && (i <= SK_PORTH); i++) {
-// 		uint32_t port = mgl_get_gpio_port(i);
-// 		gpio_mode_setup(port, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, 0xffff);
-// 		gpio_set_output_options(port, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, 0xffff);
-// 		gpio_set_af(port, 0, 0xffff);
-// 	}
-//
-// 	sk_pin out_pins[] = {
-// 		mgl_led_orange,
-// 		mgl_led_red,
-// 		mgl_led_green,
-// 		mgl_led_blue,
-// 	};
-//
-// 	// set all outputs to out, push-pull, no pullup
-// 	sk_arr_foreach(pin, out_pins) {
-// 		uint32_t port = mgl_get_gpio_port(pin.port);
-// 		gpio_mode_setup(port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, (1 << pin.pin));
-// 	}
-//
-// 	gpio_mode_setup(mgl_get_gpio_port(sk_io_lcd_data.port), GPIO_MODE_OUTPUT,
-// 				    GPIO_PUPD_NONE, sk_io_lcd_data.pins);
-//
-// 	sk_pin in_pins[] = {
-// 		mgl_btn_usr,
-// 		mgl_btn_swt1,
-// 		mgl_btn_swt2,
-//         mgl_btn_swt3,
-//         mgl_btn_swt4,
-//         mgl_btn_swt5
-// 	};
-//
-// 	// set all inputs to in, no pullup
-// 	sk_arr_foreach(pin, in_pins) {
-// 		uint32_t port = sk_pin_port_to_gpio(pin.port);
-// 		gpio_mode_setup(port, GPIO_MODE_INPUT, GPIO_PUPD_NONE, (1 << pin.pin));
-// 	}
-// }
-
 /**
  * Functions for work with buttons.
  */

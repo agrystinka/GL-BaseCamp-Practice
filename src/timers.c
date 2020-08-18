@@ -5,51 +5,51 @@
 volatile uint32_t __nticks = 0;
 const uint32_t TICK_RATE_HZ = 1000ul; //1kHz
 
-//work in process
-void pwm_timer_tim2_setup(){
-	//nvic_set_priority(NVIC_EXTI0_IRQ, 2 << 2 | 3);
-	rcc_periph_clock_enable(RCC_GPIOD); //leds are here
-	//rcc_periph_clock_enable(RCC_GPIOA); //blue user bnt is here
-	//gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO0);		// pulldown is external
-	rcc_periph_clock_enable(RCC_SYSCFG);
-    //jusrt to test
-	mgl_mode_setup_default(mgl_led_blue);
-	mgl_set(mgl_led_blue);
+// //work in process
+// void pwm_timer_tim2_setup(){
+// 	//nvic_set_priority(NVIC_EXTI0_IRQ, 2 << 2 | 3);
+// 	rcc_periph_clock_enable(RCC_GPIOD); //leds are here
+// 	//rcc_periph_clock_enable(RCC_GPIOA); //blue user bnt is here
+// 	//gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO0);		// pulldown is external
+// 	rcc_periph_clock_enable(RCC_SYSCFG);
+//     //jusrt to test
+// 	mgl_mode_setup_default(mgl_led_blue);
+// 	mgl_set(mgl_led_blue);
+//
+// 	//exti_select_source(EXTI0, GPIOA);
+// 	//exti_set_trigger(EXTI0, EXTI_TRIGGER_RISING);
+// 	//exti_enable_request(EXTI0);
+// 	//exti_reset_request(EXTI0);
+// 	//nvic_enable_irq(NVIC_EXTI0_IRQ);
+// 	mgl_mode_setup(mgl_led_green, GPIO_MODE_AF, GPIO_PUPD_NONE);
+// 	gpio_set_output_options(GPIOD, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, GPIO12);
+// 	gpio_set_af(GPIOD, GPIO_AF1, GPIO12);
+// 	gpio_mode_setup(GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO12);
+//
+// 	rcc_periph_clock_enable(RCC_TIM1);
+//
+// 	timer_set_mode(TIM1, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+// 	timer_set_prescaler(TIM1, 16000000 / (256*1000));
+// 	timer_enable_preload(TIM1);
+// 	timer_set_period(TIM1, 255);
+// 	//timer_continuous_mode(TIM1);
+// 	timer_set_oc_mode(TIM1, TIM_OC1, TIM_OCM_PWM1);
+// 	timer_enable_oc_output(TIM1, TIM_OC1);
+// 	timer_enable_break_main_output(TIM1);
+// 	timer_set_oc_value(TIM1, TIM_OC1, 0);
+// 	timer_enable_counter(TIM1);
+// }
 
-	//exti_select_source(EXTI0, GPIOA);
-	//exti_set_trigger(EXTI0, EXTI_TRIGGER_RISING);
-	//exti_enable_request(EXTI0);
-	//exti_reset_request(EXTI0);
-	//nvic_enable_irq(NVIC_EXTI0_IRQ);
-	mgl_mode_setup(mgl_led_green, GPIO_MODE_AF, GPIO_PUPD_NONE);
-	gpio_set_output_options(GPIOD, GPIO_OTYPE_PP, GPIO_OSPEED_2MHZ, GPIO12);
-	gpio_set_af(GPIOD, GPIO_AF1, GPIO12);
-	gpio_mode_setup(GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO12);
+// void tim1_isr(void)
+// {
+// 	mgl_toggle(mgl_led_green);
+// 	//timer_clear_flag(TIM7, TIM_SR_UIF);
+// }
 
-	rcc_periph_clock_enable(RCC_TIM1);
-
-	timer_set_mode(TIM1, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-	timer_set_prescaler(TIM1, 16000000 / (256*1000));
-	timer_enable_preload(TIM1);
-	timer_set_period(TIM1, 255);
-	//timer_continuous_mode(TIM1);
-	timer_set_oc_mode(TIM1, TIM_OC1, TIM_OCM_PWM1);
-	timer_enable_oc_output(TIM1, TIM_OC1);
-	timer_enable_break_main_output(TIM1);
-	timer_set_oc_value(TIM1, TIM_OC1, 0);
-	timer_enable_counter(TIM1);
-}
-
-void tim1_isr(void)
-{
-	mgl_toggle(mgl_led_green);
-	//timer_clear_flag(TIM7, TIM_SR_UIF);
-}
-
-static void timer1_set_pwm(uint8_t val)
-{
-	timer_set_oc_value(TIM1, TIM_OC1, val);	// we have TIM1_CH1 connected to backlight
-}
+// static void timer1_set_pwm(uint8_t val)
+// {
+// 	timer_set_oc_value(TIM1, TIM_OC1, val);	// we have TIM1_CH1 connected to backlight
+// }
 
 /*
  * Realization of delay for N ms based on one systick./*

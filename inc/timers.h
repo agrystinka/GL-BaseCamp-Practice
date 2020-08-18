@@ -49,7 +49,7 @@ void one_shot_timer_tim7_setup(void);
 void delay_us_tim7(uint32_t time_us);
 void tim7_isr(void);
 
-void pwm_timer_tim2_setup();
-void exti0_isr(void);
-void tim1_isr(void);
+//void pwm_timer_tim2_setup();
+//void exti0_isr(void);
+//void tim1_isr(void);
 #endif
