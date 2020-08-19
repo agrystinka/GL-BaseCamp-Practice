@@ -34,6 +34,11 @@ void lcd_print_int(struct sk_lcd *lcd, int32_t num, char format)
 	}
 }
 
+void lcd_print_float(struct sk_lcd *lcd, float num)
+{
+
+}
+
 void lcd_print_n(struct sk_lcd *lcd)
 {
 	static cnt = 0;
@@ -48,6 +53,7 @@ void lcd_print_n(struct sk_lcd *lcd)
 	}
 	cnt = 1 - cnt;
 }
+
 
 void lcd_print(struct sk_lcd *lcd, const char *format, ...)
 {
@@ -64,6 +70,9 @@ void lcd_print(struct sk_lcd *lcd, const char *format, ...)
 		else if(*ptr == '\r'){
 			sk_lcd_cmd_rethome(lcd);
 	   	}
+		// else if(*ptr == '%'){
+		//
+		// }
 		else{
 			sk_lcd_putchar(lcd, *ptr);
 		}

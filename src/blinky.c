@@ -27,7 +27,7 @@ struct sk_lcd lcd = {
 	.charmap_func = &sk_lcd_charmap_rus_cp1251
 };
 
-static void lcd_putstring(struct sk_lcd *lcd, const char *str)	// dummy example
+void lcd_putstring(struct sk_lcd *lcd, const char *str)	// dummy example
 {
 	char *ptr = str;
 	while (*ptr != '\0') {
@@ -60,23 +60,27 @@ int main(void)
 	sk_lcd_cmd_onoffctl(&lcd, true, false, false);	// display on, cursor off, blinking off
 	sk_lcd_set_backlight(&lcd, 200);
 
-	//lcd_putstring(&lcd, "Здравствуй, мир!");
-	// TODO: implement printf-like interface with special chars (\r \n \t ...)
-	//sk_lcd_cmd_setaddr(&lcd, 0x40, false);	// 2nd line begins from addr 0x40
-	//lcd_putstring(&lcd, "Hello, world!");
-	//lcd_print(&lcd, "\tHello, 123", 8, 9, 12);
-	//lcd_print_int(&lcd, -987, 'd');
-	if(SK_EOK == custom_cgram_load(&lcd))
-		lcd_putstring(&lcd, "ґґґґ");
-	else
-		lcd_putstring(&lcd, "Error");
-	//sk_lcd_cmd_setaddr(&lcd, 0x40, false);
+	//if(custom_cgram_load(&lcd) != SK_EOK){
+	//	lcd_print(&lcd, "ґ");
+	//}
+	//{
+		//lcd_print(&lcd, "\tH, 12", 8, 9, 12);
+		//lcd_print_int(&lcd, -98, 'd');
 
-	//sk_lcd_putchar(&lcd, 'ґ');
-	//sk_lcd_putchar(&lcd, 'a');
-//	sk_lcd_putchar(&lcd, 'A');
-
-	//bool isdirright = true;
-     while(1) {
+		//sk_lcd_cmd_setaddr(&lcd, 0x00, 1);   //cmd
+		//_sk_lcd_cmd(&lcd, 0, 0, 0x04);
+		//_sk_lcd_cmd(&lcd, 0, 0, 0x00);
+		// sk_lcd_cmd_setaddr(&lcd, 0x00, 1);   //cmd
+		// //delay_us_tim7(43);
+		// uint8_t cuctom_ch1[8] = {0x00, 0x01, 0x1f, 0x10, 0x10, 0x10, 0x10, 0x00};
+		// for(int i = 0; i < 8; i++)
+		// 	lcd_data_set_byte(&lcd, cuctom_ch1[i]);
+		// //if(SK_EOK == custom_cgram_load(&lcd))
+		//lcd_print(&lcd, "р");
+		custom_char_load(&lcd);
+		//lcd_print(&lcd, "ґ");
+		//lcd_print(&lcd, "п");
+//	}
+    while(1) {
     }
 }

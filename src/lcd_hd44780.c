@@ -1,4 +1,4 @@
-#include "display.h"
+#include "lcd_hd44780.h"
 #include <stddef.h>
 
 // Clear Display and Return Home commands
@@ -372,19 +372,43 @@ uint8_t sk_lcd_charmap_rus_cp1251(const char c)
 	}
 }
 
-//only for 'ґ'
+void custom_char_load(struct sk_lcd *lcd)
+{
+	//for 'ґ'
+	//_sk_lcd_cmd(lcd, false, false, 0x40);
+	sk_lcd_cmd_setaddr(lcd, 0x00, true);
+	uint8_t char1[8] = {0x00, 0x01, 0x1f, 0x10, 0x10, 0x10, 0x10, 0x00};
+	for(int i = 0; i < 8; i++)
+		sk_lcd_write_byte(lcd, char1[i]);
+		//lcd_data_set_byte(lcd, char1[i]);
+
+	sk_lcd_cmd_setaddr(lcd, 0x00, false);
+	sk_lcd_write_byte(lcd, 0x00);
+
+//	lcd_data_set_byte(lcd, 0x00);
+}
 sk_err custom_cgram_load(struct sk_lcd *lcd)
 {
+	//for 'ґ'
 	if(sk_lcd_cmd_setaddr(lcd, 0x00, 1) != SK_EOK)  //cmd
 		return SK_EUNKNOWN;
-	lcd_data_set_byte(lcd, 0x00);  //1
-	lcd_data_set_byte(lcd, 0x01);  //2
-	lcd_data_set_byte(lcd, 0x1f);  //3
-	lcd_data_set_byte(lcd, 0x10);  //4
-	lcd_data_set_byte(lcd, 0x10);  //5
-	lcd_data_set_byte(lcd, 0x10);  //6
-	lcd_data_set_byte(lcd, 0x10);  //7
-	lcd_data_set_byte(lcd, 0x00);  //8
+	uint8_t char1[8] = {0x00, 0x01, 0x1f, 0x10, 0x10, 0x10, 0x10, 0x00};
+	for(int i = 0; i < 8; i++)
+		lcd_data_set_byte(lcd, char1[i]);
+
+	//for 'є'
+	if(sk_lcd_cmd_setaddr(lcd, 0x08, 1) != SK_EOK)  //cmd
+		return SK_EUNKNOWN;
+	uint8_t char2[8] = {0x00, 0x00, 0x0e, 0x10, 0x1c, 0x11, 0x0e, 0x00};
+	for(int i = 0; i < 8; i++)
+		lcd_data_set_byte(lcd, char2[i]);
+
+	//for 'ї'
+	if(sk_lcd_cmd_setaddr(lcd, 0x10, 1) != SK_EOK)  //cmd
+		return SK_EUNKNOWN;
+	uint8_t char3[8] = {0x00, 0x0a, 0x00, 0x04, 0x04, 0x04, 0x04, 0x00};
+	for(int i = 0; i < 8; i++)
+		lcd_data_set_byte(lcd, char3[i]);
 
 	return SK_EOK;
 }
