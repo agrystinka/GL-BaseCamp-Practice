@@ -1,6 +1,9 @@
 #include "display.h"
 #include <stdint.h>
 
+//
+// bool isemoji = false;
+// bool ischar  = false;
 void lcd_print_int(struct sk_lcd *lcd, int32_t num, char format)
 {
 	//hex
@@ -34,14 +37,14 @@ void lcd_print_int(struct sk_lcd *lcd, int32_t num, char format)
 	}
 }
 
-void lcd_print_float(struct sk_lcd *lcd, float num)
-{
-
-}
+// void lcd_print_float(struct sk_lcd *lcd, float num)
+// {
+//
+// }
 
 void lcd_print_n(struct sk_lcd *lcd)
 {
-	static cnt = 0;
+	static uint8_t cnt = 0;
 	if(cnt == 0){
 		sk_lcd_cmd_setaddr(&lcd, 0x40, false);
 	}
@@ -53,10 +56,30 @@ void lcd_print_n(struct sk_lcd *lcd)
 	}
 	cnt = 1 - cnt;
 }
-
+//
+// void lcd_print_emoji(struct sk_lcd *lcd, uint8_t c)
+// {
+// 	//lcd_custom_emoji_load(lcd);
+// 	uint8_t address = 0;
+// 	switch (c) {
+// 		case HURT:   address =  0x07; //change
+// 		case CHARGE: address =  0x01;
+// 		case BELL:   address =  0x02;
+// 		case LOCK:   address =  0x03;
+// 		case KEY:    address =  0x04;
+// 		default:     address =  0xFF;	// black square for unknown symbols
+// 	}
+// 	sk_lcd_write_byte(lcd, address);
+// 	//lcd_custom_char_load(lcd);
+// }
 
 void lcd_print(struct sk_lcd *lcd, const char *format, ...)
 {
+	// static bool isload = false;
+	// if(!isload){
+	// 	lcd_custom_char_load(lcd);
+	// 	isload = true;
+	// }
 	int cnt = 0;
 	char *ptr = format;
 	while (*ptr != '\0') {
@@ -70,9 +93,6 @@ void lcd_print(struct sk_lcd *lcd, const char *format, ...)
 		else if(*ptr == '\r'){
 			sk_lcd_cmd_rethome(lcd);
 	   	}
-		// else if(*ptr == '%'){
-		//
-		// }
 		else{
 			sk_lcd_putchar(lcd, *ptr);
 		}

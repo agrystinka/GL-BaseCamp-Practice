@@ -54,33 +54,19 @@ int main(void)
 	init_bkl_pwm();
 
 	mgl_clear(mgl_led_orange);
-	//sk_pin_set(sk_io_led_green, true);
 
 	sk_lcd_init(&lcd);
 	sk_lcd_cmd_onoffctl(&lcd, true, false, false);	// display on, cursor off, blinking off
 	sk_lcd_set_backlight(&lcd, 200);
 
-	//if(custom_cgram_load(&lcd) != SK_EOK){
-	//	lcd_print(&lcd, "ґ");
-	//}
-	//{
-		//lcd_print(&lcd, "\tH, 12", 8, 9, 12);
-		//lcd_print_int(&lcd, -98, 'd');
+	lcd_custom_char_load(&lcd);
+	sk_lcd_write_byte(&lcd, 0x07); //hurt emoji
+	lcd_print(&lcd, "Aa Рр ґї ЬҐ");
+	sk_lcd_cmd_setaddr(&lcd, 0x40, false);
+	lcd_print_int(&lcd, -57, 0); //3rd element is format 'h' - hex, 'b' - binary, else - decimal
+	lcd_print(&lcd, "\t");
+	lcd_print_int(&lcd, 890, 0);
 
-		//sk_lcd_cmd_setaddr(&lcd, 0x00, 1);   //cmd
-		//_sk_lcd_cmd(&lcd, 0, 0, 0x04);
-		//_sk_lcd_cmd(&lcd, 0, 0, 0x00);
-		// sk_lcd_cmd_setaddr(&lcd, 0x00, 1);   //cmd
-		// //delay_us_tim7(43);
-		// uint8_t cuctom_ch1[8] = {0x00, 0x01, 0x1f, 0x10, 0x10, 0x10, 0x10, 0x00};
-		// for(int i = 0; i < 8; i++)
-		// 	lcd_data_set_byte(&lcd, cuctom_ch1[i]);
-		// //if(SK_EOK == custom_cgram_load(&lcd))
-		//lcd_print(&lcd, "р");
-		custom_char_load(&lcd);
-		//lcd_print(&lcd, "ґ");
-		//lcd_print(&lcd, "п");
-//	}
     while(1) {
     }
 }
