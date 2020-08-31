@@ -52,7 +52,7 @@ const uint32_t TICK_RATE_HZ = 1000ul; //1kHz
 // }
 
 /*
- * Realization of delay for N ms based on one systick./*
+ * Realization of delay for N ms based on one systick.
 
  */
  //strong declaration of iterrupt

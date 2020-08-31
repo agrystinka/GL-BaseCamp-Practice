@@ -5,12 +5,15 @@
 
 extern struct sk_lcd lcd;
 
-enum emoji{
-    HURT = 0,
-    CHARGE = 1,
-    BELL = 2,
-    LOCK = 3,
-    KEY = 4
+enum symb{
+    UP       = 0,
+    DOWN     = 1,
+    RIGHT    = 2,
+    LEFT     = 3,
+    POINT    = 4,
+    LOCKED   = 5,
+    UNLOCKED = 6,
+    CLOSE    = 7
 };
 
 void display_setup(void);
@@ -19,6 +22,8 @@ void lcd_print_int(struct sk_lcd *lcd, int32_t num, char format);
 //void lcd_print_emoji(struct sk_lcd *lcd, uint8_t c);
 void lcd_print(struct sk_lcd *lcd, const char *format, ...);
 void lcd_print_n(struct sk_lcd *lcd);
+
+void lcd_print_symbol(struct sk_lcd *lcd, uint8_t c);
 
 /*Display PWM*/
 void timer1_set_pwm_backlight(uint8_t val);

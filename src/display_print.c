@@ -1,9 +1,6 @@
 #include "display.h"
 #include <stdint.h>
 
-//
-// bool isemoji = false;
-// bool ischar  = false;
 void lcd_print_int(struct sk_lcd *lcd, int32_t num, char format)
 {
 	//hex
@@ -37,11 +34,6 @@ void lcd_print_int(struct sk_lcd *lcd, int32_t num, char format)
 	}
 }
 
-// void lcd_print_float(struct sk_lcd *lcd, float num)
-// {
-//
-// }
-
 void lcd_print_n(struct sk_lcd *lcd)
 {
 	static uint8_t cnt = 0;
@@ -56,35 +48,14 @@ void lcd_print_n(struct sk_lcd *lcd)
 	}
 	cnt = 1 - cnt;
 }
-//
-// void lcd_print_emoji(struct sk_lcd *lcd, uint8_t c)
-// {
-// 	//lcd_custom_emoji_load(lcd);
-// 	uint8_t address = 0;
-// 	switch (c) {
-// 		case HURT:   address =  0x07; //change
-// 		case CHARGE: address =  0x01;
-// 		case BELL:   address =  0x02;
-// 		case LOCK:   address =  0x03;
-// 		case KEY:    address =  0x04;
-// 		default:     address =  0xFF;	// black square for unknown symbols
-// 	}
-// 	sk_lcd_write_byte(lcd, address);
-// 	//lcd_custom_char_load(lcd);
-// }
 
 void lcd_print(struct sk_lcd *lcd, const char *format, ...)
 {
-	// static bool isload = false;
-	// if(!isload){
-	// 	lcd_custom_char_load(lcd);
-	// 	isload = true;
-	// }
 	int cnt = 0;
 	char *ptr = format;
 	while (*ptr != '\0') {
 		if(*ptr == '\n'){
-			lcd_print_n(&lcd);
+			lcd_print_n(lcd);
 	   	}
 		else if(*ptr == '\t'){
 			sk_lcd_putchar(lcd, ' ');
@@ -100,7 +71,24 @@ void lcd_print(struct sk_lcd *lcd, const char *format, ...)
 		cnt++;
 		if(cnt >= 16){
 			cnt = 0;
-			lcd_print_n(&lcd);
+			lcd_print_n(lcd);
 		}
 	}
+}
+
+void lcd_print_symbol(struct sk_lcd *lcd, uint8_t c)
+{
+	uint8_t address = 0;
+	switch (c) {
+		case UP:       address =  0x00; break;
+		case DOWN:     address =  0x01; break;
+		case RIGHT:    address =  0x02; break;
+		case LEFT:     address =  0x03; break;
+		case POINT:    address =  0x04; break;
+		case LOCKED:   address =  0x05; break;
+		case UNLOCKED: address =  0x06; break;
+		case CLOSE:    address =  0x07; break;
+		address =  0xFF;	 //black square for unknown symbols
+	}
+	sk_lcd_write_byte(lcd, address);
 }
